@@ -40,7 +40,8 @@ describe("Feature: Organize Conference",  () => {
                           .send({
                             userId: e2eUsers.bob.entity.props.id,
                             conferenceId: e2eConference.conference_poo2.entity.props.id
-                          })      
+                          }) 
+
       expect(response.status).toBe(201);
       expect(response.body.data.user.props.id).toEqual('bob');
       expect(response.body.data.conference.props.organizerId).toEqual('john-doe');
@@ -51,7 +52,22 @@ describe("Feature: Organize Conference",  () => {
       expect(createdBooking).toBeDefined()
 
       const mailer = container.resolve('mailer') as InMemoryMailer;
-      expect(mailer.sentEmails[0].to).toBe('bob@gmail.com');     
+      expect(mailer.sentEmails[0].to).toBe('bob@gmail.com');                   
+    })
+  })
+
+  describe("Scenario: Errors",() => {
+    it("should throw an error when the user has already booked for the conferenc ", async () => {  
+      const id = e2eConference.conference_poo2.entity.props.id
+      const response = await request(app)
+                            .post(`/conference/${id}/book`)
+                            .set('Authorization', e2eUsers.bob.createAuthorizationToken())
+                            .send({
+                              userId: e2eUsers.bob.entity.props.id,
+                              conferenceId: e2eConference.conference_poo2.entity.props.id
+                            }) 
+      
+      expect(response.body.error.message).toBe('User has already booked for this conference.')                    
     })
   })
 })
